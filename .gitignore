@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+Thumbs.db
+outputs/
+audio/
+frames/
+shots/
+versions/
+qa/
+*.mp4
+*.wav
+*.log
