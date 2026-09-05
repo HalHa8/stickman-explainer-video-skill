@@ -27,6 +27,7 @@ def validate_structure(data):
         return errors + ["missing opening configuration"]
     concept_records = opening.get("concepts")
     explicit_override = opening.get("explicit_override") is True
+    life_mapping = opening.get("hook_style") == "life_mapping" and not explicit_override
     allowed_counts = (1, 2, 3, 4) if explicit_override else (3, 4)
     if not isinstance(concept_records, list) or len(concept_records) not in allowed_counts:
         return errors + [
@@ -46,6 +47,43 @@ def validate_structure(data):
     if errors or len(concepts) != len(concept_records):
         return errors
 
+    if life_mapping:
+        for field in (
+            "familiar_behavior_spoken",
+            "familiar_behavior_display",
+            "life_example_spoken",
+            "life_example_display",
+            "time_promise_spoken",
+            "time_promise_display",
+        ):
+            value = opening.get(field)
+            if not isinstance(value, str) or not value.strip():
+                errors.append(f"opening.{field} is required for life_mapping")
+        mappings = opening.get("concept_mappings")
+        if not isinstance(mappings, list) or len(mappings) != len(concepts):
+            errors.append("opening.concept_mappings must contain one record per concept")
+        else:
+            life_elements = []
+            for index, (mapping, concept) in enumerate(zip(mappings, concepts)):
+                if not isinstance(mapping, dict):
+                    errors.append(f"opening.concept_mappings[{index}] must be an object")
+                    continue
+                if mapping.get("concept") != concept:
+                    errors.append(
+                        f"opening.concept_mappings[{index}].concept must match {concept}"
+                    )
+                for field in ("core_role", "life_element"):
+                    value = mapping.get(field)
+                    if not isinstance(value, str) or not value.strip():
+                        errors.append(
+                            f"opening.concept_mappings[{index}].{field} is required"
+                        )
+                life_element = mapping.get("life_element")
+                if isinstance(life_element, str) and life_element.strip():
+                    life_elements.append(life_element.strip())
+            if len(life_elements) != len(set(life_elements)):
+                errors.append("opening concept mappings must use distinct life_element values")
+
     shots = data.get("shots")
     if not isinstance(shots, list) or len(shots) < 3:
         return errors + ["总-分-总 requires at least an opening, an explanation, and a summary shot"]
@@ -55,6 +93,25 @@ def validate_structure(data):
         errors.append("the first shot must use section=opening")
     if first.get("concepts") != concepts:
         errors.append("the opening shot concepts must match opening.concepts in order")
+    if life_mapping:
+        if first.get("hook_style") != "life_mapping":
+            errors.append("the opening shot must use hook_style=life_mapping")
+        for field in ("familiar_behavior", "life_example", "time_promise", "ai_topic"):
+            value = first.get(field)
+            if not isinstance(value, str) or not value.strip():
+                errors.append(f"the opening shot must contain {field}")
+        opening_milestones = first.get("required_milestones", [])
+        for milestone in (
+            "familiar_scene_visible_in_first_second",
+            "recognition_contrast_visible",
+            "time_commitment_visible",
+            "all_concept_chips_visible",
+        ):
+            if milestone not in opening_milestones:
+                errors.append(f"the opening shot must require {milestone}")
+        for index in range(1, len(concepts) + 1):
+            if f"concept_{index}_visible" not in opening_milestones:
+                errors.append(f"the opening shot must require concept_{index}_visible")
 
     explained = []
     for shot in shots[1:-1]:

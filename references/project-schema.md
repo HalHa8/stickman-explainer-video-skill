@@ -35,6 +35,15 @@ Store the project configuration as UTF-8 JSON. Paths are relative to the configu
   "opening": {
     "required": true,
     "explicit_override": false,
+    "hook_style": "life_mapping",
+    "familiar_behavior_spoken": "打篮球",
+    "familiar_behavior_display": "打篮球",
+    "life_example_spoken": "一场篮球比赛",
+    "life_example_display": "一场篮球比赛",
+    "time_promise_spoken": "60秒",
+    "time_promise_display": "60秒",
+    "ai_topic_spoken": "Agent、Tool、Skill和MultiAgent",
+    "ai_topic_display": "Agent、Tool、Skill和Multi-agent",
     "domain_spoken": "篮球场",
     "domain_display": "篮球场",
     "concepts": [
@@ -43,24 +52,37 @@ Store the project configuration as UTF-8 JSON. Paths are relative to the configu
       {"spoken": "Skill", "display": "Skill"},
       {"spoken": "MultiAgent", "display": "Multi-agent"}
     ],
-    "narration_template": "如果把AI放到{domain}，{concepts}，其实一下就能听懂。",
-    "title_template": "如果把AI放到{domain}？"
+    "concept_mappings": [
+      {"concept": "Agent", "core_role": "自主判断并完成任务", "life_element": "持球组织进攻的球员"},
+      {"concept": "Tool", "core_role": "提供单一可调用动作", "life_element": "篮球"},
+      {"concept": "Skill", "core_role": "组织一组动作形成稳定能力", "life_element": "运球突破"},
+      {"concept": "Multi-agent", "core_role": "多个主体协作完成共同目标", "life_element": "整支球队"}
+    ],
+    "narration_template": "你每天{familiar_behavior}，其实已经理解了{ai_topic}。只需要{time_promise}，我用{life_example}告诉你什么是{ai_topic}。",
+    "title_template": "你每天{familiar_behavior}"
   },
   "shots": [
     {
       "id": 1,
       "section": "opening",
-      "spoken_text": "如果把AI放到篮球场，Agent、Tool、Skill和MultiAgent，其实一下就能听懂。",
-      "title_text": "如果把AI放到篮球场？",
+      "hook_style": "life_mapping",
+      "spoken_text": "你每天打篮球，其实已经理解了Agent、Tool、Skill和MultiAgent。只需要60秒，我用一场篮球比赛告诉你什么是Agent、Tool、Skill和MultiAgent。",
+      "title_text": "你每天打篮球",
+      "familiar_behavior": "打篮球",
+      "life_example": "一场篮球比赛",
+      "time_promise": "60秒",
+      "ai_topic": "Agent、Tool、Skill和Multi-agent",
       "concepts": ["Agent", "Tool", "Skill", "Multi-agent"],
       "display_text": [
-        {"text": "Agent", "cue": 0.28},
-        {"text": "Tool", "cue": 0.39},
-        {"text": "Skill", "cue": 0.49},
-        {"text": "Multi-agent", "cue": 0.59}
+        {"text": "Agent", "cue": 0.43},
+        {"text": "Tool", "cue": 0.54},
+        {"text": "Skill", "cue": 0.65},
+        {"text": "Multi-agent", "cue": 0.76}
       ],
       "required_milestones": [
-        "opening_question_visible",
+        "familiar_scene_visible_in_first_second",
+        "recognition_contrast_visible",
+        "time_commitment_visible",
         "concept_1_visible",
         "concept_2_visible",
         "concept_3_visible",
@@ -98,11 +120,18 @@ Store the project configuration as UTF-8 JSON. Paths are relative to the configu
 ## Field behavior
 
 - `structure`: declares the mandatory `总-分-总` narrative and the default concise-summary-then-comment-question ending.
-- `opening`: the mandatory first-shot source of truth. Fill both domain fields and three or four concept objects before running `scripts/prepare_opening.py`.
+- `opening`: the mandatory first-shot source of truth. For the default hook, fill the familiar behavior, life example, time promise, three or four concepts, and one mapping record per concept before running `scripts/prepare_opening.py`.
 - `explicit_override`: keep `false` for the standard opening. Set it to `true` only when the user explicitly supplies different opening wording or a different concept count; the helper then accepts one to four concepts.
+- `hook_style`: new projects use `life_mapping`. A legacy project without this field keeps its old opening behavior.
+- `familiar_behavior_*`: a behavior, object, or situation that can appear visually within the first second.
+- `life_example_*`: the familiar system used to carry the explanation.
+- `time_promise_*`: a short, credible commitment such as `60秒`.
+- `ai_topic_*`: the topic named in both hook sentences. It may be an umbrella topic or a natural list; if omitted, the helper derives it from `concepts`.
+- `concept_mappings`: exactly one record per concept, in display order. Each record contains the exact display `concept`, its `core_role`, and a distinct `life_element` so the mapping remains one-to-one.
 - `domain_spoken` and each concept's `spoken`: pronunciation-safe TTS forms.
 - `domain_display` and each concept's `display`: exact on-screen forms.
-- `narration_template`: `{concepts}` expands to a natural Chinese list: `A、B和C` or `A、B、C和D`.
+- `domain_spoken` and `domain_display` remain for backward compatibility and optional downstream scene metadata; the default life-mapping hook does not require them.
+- `narration_template`: supports `{familiar_behavior}`, `{life_example}`, `{time_promise}`, `{ai_topic}`, and `{concepts}`. `{concepts}` expands to a natural Chinese list.
 - `narration_template` and `title_template`: standard templates. Change them only when the user explicitly requests a different opening.
 - `section`: one of `opening`, `explanation`, `transition`, or `summary`. The first shot is `opening`; the final shot is `summary`.
 - `concepts` on middle shots: headline concepts meaningfully explained by that shot. Across all `explanation` shots, cover every opening concept.
@@ -120,7 +149,7 @@ Store the project configuration as UTF-8 JSON. Paths are relative to the configu
 - `safe_area_top`: fraction of the complete frame that remains free of content.
 - `subtitles`: concept graphics do not change this value.
 
-Run `scripts/prepare_opening.py project.json` after filling `opening`. By default it requires three or four concepts. With an explicit user-approved override it accepts one to four concepts and preserves the custom narration template. Use `--force` only when deliberately refreshing an existing first shot.
+Run `scripts/prepare_opening.py project.json` after filling `opening`. The default life-mapping hook requires three or four concepts and a complete one-to-one mapping. With an explicit user-approved override it accepts one to four concepts and preserves the custom narration template. Use `--force` only when deliberately refreshing an existing first shot.
 
 Run `scripts/validate_structure.py project.json` after the storyboard is complete and again before final delivery. It verifies the opening overview, middle coverage, concise summary, final comment hook, and visual concept continuity.
 

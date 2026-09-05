@@ -12,7 +12,7 @@ Use this reference only as an example of a confirmed analogy and a dense but rea
 
 ## Useful visual patterns
 
-- Opening shot reference: narrate `如果把AI放到篮球场，Agent、Tool、Skill和MultiAgent，其实一下就能听懂。` Show `如果把AI放到篮球场？` at the top of the safe content region, then reveal `Agent`, `Tool`, `Skill`, and `Multi-agent` one by one as they are spoken. End with all four visible. Keep the physical top 10% blank.
+- Opening shot reference: narrate `你每天打篮球，其实已经理解了Agent、Tool、Skill和MultiAgent。只需要60秒，我用一场篮球比赛告诉你什么是Agent、Tool、Skill和MultiAgent。` Show a recognizable basketball action within the first second, then deliver the recognition contrast and `60秒` promise before revealing `Agent`, `Tool`, `Skill`, and `Multi-agent` in order. End with all four visible. Keep the physical top 10% blank.
 - Four-panel tool shot: show the same player performing four actions. Keep all panels visible and light them in spoken order. When shortening, cut the quiet opening so the final highlight and ellipsis remain readable.
 - Skill decomposition: show a move card beside the atomic-action icons that compose it.
 - Agent composition: connect two complete skill cards and show one player executing both.

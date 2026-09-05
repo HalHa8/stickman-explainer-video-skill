@@ -21,7 +21,7 @@ Production artifacts include polished narration, storyboards, pilot images, gene
 1. Confirm **One-click final video** or **Review as you go** before production begins.
 2. Offer topic ideas only when requested or when the user has not chosen a topic.
 3. Draft the core explanation or analogy. In Review as you go mode, obtain confirmation before polished narration. In One-click final video mode, preserve the user's supplied explanation as authoritative and resolve minor gaps without pausing.
-4. Select three or four headline AI concepts by default. Design the opening overview, the concept-by-concept middle, and a concise closing summary followed by a comment question, then write narration and split it into shots with characters, actions, concept text, visual cues, and required milestones. In Review as you go mode, pause for approval of both before generating media.
+4. Select three or four headline AI concepts by default. Before drafting the opening, extract each concept's core role, choose one familiar everyday system, and build a one-to-one mapping between the concepts and distinct elements of that system. Use the life-mapping hook below, then design the concept-by-concept middle and a concise closing summary followed by a comment question. Write narration and split it into shots with characters, actions, concept text, visual cues, and required milestones. In Review as you go mode, pause for approval of both before generating media.
 5. When visual judgment is still open, render one representative pilot shot before the full video. In Review as you go mode, pause for visual approval; in One-click final video mode, inspect and refine it internally without pausing.
 6. Generate every narration segment with the selected `audio.narrator_voice` backend and one base rate. Measure the resulting audio before assigning shot durations.
 7. Run the structure validator, then render topic-specific scenes, synchronize concept text to the spoken cues, and preserve every required visual milestone.
@@ -30,31 +30,41 @@ Production artifacts include polished narration, storyboards, pilot images, gene
 
 Read [storyboard-guidelines.md](references/storyboard-guidelines.md) before drafting narration or shots. Read [project-schema.md](references/project-schema.md) when initializing or building a project. Read [basketball-example.md](references/basketball-example.md) only when a concrete example or the basketball template is useful.
 
-## Mandatory first shot
+## Life-mapping opening hook
 
-Unless the user explicitly requests a different opening, every video created with this skill must begin with the same narration structure:
+Unless the user explicitly requests a different opening, every video created with this skill must begin with these two narration sentences:
 
-`如果把AI放到{domain}，{concept_list}，其实一下就能听懂。`
+`你每天{familiar_behavior}，其实已经理解了{ai_topic}。`
 
-Use three or four concepts. Format the spoken list naturally in Chinese: `A、B和C` for three concepts, or `A、B、C和D` for four.
+`只需要{time_promise}，我用{life_example}告诉你什么是{ai_topic}。`
 
-When the user explicitly supplies different opening wording or a different concept count, preserve that opening and mark `opening.explicit_override: true` in the project instead of forcing it back to the default template.
+Build this opening in five steps:
+
+1. Extract the core role of every headline AI concept.
+2. Choose an everyday system that an ordinary viewer already knows.
+3. Map every concept one-to-one to a distinct element in that system.
+4. Create the recognition contrast: the viewer discovers that a familiar behavior already contains the idea.
+5. Add a short, credible time promise to lower the learning barrier.
+
+Use three or four headline concepts by default. `{ai_topic}` may be their natural spoken list or a clear umbrella topic. When the user explicitly supplies different opening wording or a different concept count, preserve it and mark `opening.explicit_override: true` instead of forcing the default hook.
 
 The first shot must:
 
-- show `如果把AI放到{domain}？` at the top of the safe content area;
-- reveal the three or four concept labels one by one, in the same order in which the narration says them;
-- use exact editorial spelling on screen while allowing pronunciation-safe TTS forms in `spoken_text`;
-- finish with all concept labels fully visible long enough to read;
-- keep the physical top 10% of the frame blank, so “top” always means the top of the safe content area below that reserve.
+- show the familiar behavior, object, or situation within the first second;
+- lead with the life scene rather than a professional definition or unexplained technical term;
+- assume no technical background and make the one-to-one mapping visually understandable;
+- deliver both the “原来我已经理解了” recognition contrast and the time promise;
+- reveal the three or four concept labels in spoken order and hold the final all-visible state long enough to read;
+- keep exact editorial spelling on screen while allowing pronunciation-safe TTS forms in `spoken_text`;
+- keep the physical top 10% of the frame blank.
 
-Follow the basketball opening's visual grammar: question first, then three or four compact concept labels synchronized to the spoken concepts, with a domain-specific character, prop, or scene reveal supporting the analogy. When the topic contains more than four candidate concepts, group or select the three or four headline concepts during concept design; in Review as you go mode, include that choice in the concept approval.
+Use `opening.concept_mappings` as the mapping source of truth. Every mapping records the concept, its core role, and its distinct life element. When the topic contains more than four candidates, group or select the three or four headline concepts during concept design; in Review as you go mode, include that choice and the mapping in concept approval.
 
 ## Mandatory total–part–total structure
 
 Every video's narration and storyboard must use a `总—分—总` structure unless the user explicitly requests another structure:
 
-1. **总｜Opening overview:** introduce the domain and the same three or four headline concepts through the mandatory first shot. Do not explain them in full yet.
+1. **总｜Opening overview:** use the life-mapping hook to introduce the familiar system and the same three or four headline concepts. Do not explain them in full yet.
 2. **分｜Concept breakdown:** explain each introduced concept in a clear sequence. Give every concept at least one meaningful narration and visual beat, and show relationships between concepts when the explanation depends on them.
 3. **总｜Concise close:** use one short synthesis sentence that resolves the video's main distinction or lesson, then immediately ask one easy, topic-specific question inviting viewers to reply in the comments. Do not add a second exhaustive recap or introduce a new headline concept.
 
@@ -91,7 +101,7 @@ Treat these as defaults. Follow explicit project-specific overrides.
 ## Non-negotiable invariants
 
 - Preserve the latest user-approved concept definitions across narration, storyboard, and visuals. Do not reintroduce a rejected analogy or definition.
-- Keep the mandatory first-shot sentence, question, three-or-four-concept order, and final all-visible state unless the user explicitly overrides the opening.
+- Keep the two-sentence life-mapping hook, first-second familiar scene, recognition contrast, time promise, three-or-four-concept order, and final all-visible state unless the user explicitly overrides the opening.
 - Preserve the `总—分—总` structure: opening concept overview, complete middle breakdown, and a closing synthesis grounded in the same approved concepts.
 - End with one concise synthesis followed by one comment question; do not repeat the complete summary twice.
 - Keep `spoken_text` separate from `display_text`. A screen may show `Multi-agent` while TTS receives `MultiAgent` to avoid an unnatural pause.
@@ -104,7 +114,7 @@ Treat these as defaults. Follow explicit project-specific overrides.
 ## Reusable scripts
 
 - `scripts/init_project.py`: create a project config and artifact folders.
-- `scripts/prepare_opening.py`: validate three or four opening concepts and create or refresh shot 1 from the fixed template.
+- `scripts/prepare_opening.py`: validate the life mapping and three or four opening concepts, then create or refresh shot 1 from the two-sentence hook.
 - `scripts/validate_structure.py`: verify the opening, middle concept coverage, and closing summary before rendering or delivery.
 - `scripts/generate_narration.py`: dispatch narration from `audio.narrator_voice`; preserve the default Windows voice or optionally run and validate local MamboTTS.
 - `scripts/generate_narration.ps1`: generate complete per-shot WAV files on Windows without tail trimming.

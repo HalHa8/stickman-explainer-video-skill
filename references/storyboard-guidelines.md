@@ -24,24 +24,24 @@ Distinguish these layers:
 
 The exact definitions come from the approved project, not from this generic pattern.
 
-## Mandatory opening shot
+## Life-mapping opening shot
 
-Every video begins with this narration pattern unless the user explicitly overrides it:
+Every video begins with this two-sentence narration pattern unless the user explicitly overrides it:
 
-`如果把AI放到{domain}，{concept_list}，其实一下就能听懂。`
+`你每天{familiar_behavior}，其实已经理解了{ai_topic}。`
 
-Use three or four headline concepts. Format them as `A、B和C` or `A、B、C和D`. The wording `放到` and `其实一下就能听懂` is part of the standard opening. Adapt only the domain and concept names.
+`只需要{time_promise}，我用{life_example}告诉你什么是{ai_topic}。`
 
-If the user explicitly specifies different opening wording or a different number of concepts, use it as an approved override and record `opening.explicit_override: true`. Do not silently rewrite the user's opening to match the default count.
+Before writing those sentences, extract each concept's core role, choose one everyday system, and assign every concept a distinct life element. The mapping must be one-to-one, not a loose theme. If the user explicitly specifies different opening wording or a different number of concepts, record `opening.explicit_override: true` and preserve it.
 
 Build the shot in this order:
 
-1. Show `如果把AI放到{domain}？` at the top of the safe content area, below the blank platform reserve.
-2. Reveal concept 1 when its name is spoken.
-3. Reveal every remaining concept in the same way and in narration order.
-4. Hold the completed layout with all three or four labels readable before the shot ends.
+1. During the first second, show the familiar behavior, object, or situation before asking viewers to process technical language.
+2. Complete the recognition contrast: the viewer realizes that the familiar behavior already contains the AI idea.
+3. Show the short time promise and the life example that will carry the explanation.
+4. Reveal all three or four concept labels in narration order and hold the completed layout long enough to read.
 
-Use a balanced three-card layout for three concepts or a compact 2×2 layout for four when appropriate. A domain-specific character, prop, or background may enter during the opening, but it must not compete with the question or delay the concept reveals. The required milestones are the question being readable, each ordered concept reveal, and the final all-visible state.
+Use a balanced three-card layout for three concepts or a compact 2×2 layout for four when appropriate. The familiar character, prop, or background is the opening anchor; labels support it without covering the action. Required milestones are the familiar scene within the first second, recognition contrast, time commitment, each ordered concept reveal, and the final all-visible state.
 
 The physical top 10% remains completely blank. “At the top of the screen” means the top of the safe content region below that blank area. If timing becomes tight, shorten empty setup and decorative motion first; never drop, overlap, or truncate a concept reveal.
 
@@ -51,7 +51,7 @@ Keep spoken and displayed forms independent. For example, narration may use `Mul
 
 Plan the whole video as three connected sections:
 
-- **Opening overview (`总`):** introduce the domain and all three or four headline concepts. This is an orientation shot, not the detailed lesson.
+- **Opening overview (`总`):** use a familiar life system to introduce all three or four headline concepts and lower the learning barrier. This is an orientation shot, not the detailed lesson.
 - **Concept breakdown (`分`):** explain every introduced concept. Allocate enough narration and visual action for the viewer to understand what it is, how it maps to the comparison domain, and how it differs from adjacent concepts.
 - **Concise close (`总`):** state one short conclusion that resolves the main lesson, then ask one topic-specific question inviting a comment. The visual may briefly reunite the established concept cards, but the narration should not repeat every definition a second time.
 
@@ -105,7 +105,7 @@ Reserve the configured safe area before positioning text. Compose in a logical d
 - All approved concepts remain consistent.
 - Spoken and displayed forms are correct.
 - Required visual milestones appear in order.
-- The standard opening question and all three or four concept labels appear in spoken order, unless explicitly overridden.
+- The first second shows a familiar life element; the recognition contrast, time promise, and all three or four concept labels appear in spoken order, unless explicitly overridden.
 - Every introduced concept receives a middle explanation beat.
 - The final screen preserves the established concepts and introduces no new headline concept.
 - The narration ends with one concise synthesis and one topic-specific comment question, without a duplicate full recap.
