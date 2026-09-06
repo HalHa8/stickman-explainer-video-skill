@@ -34,6 +34,15 @@ Every video begins with this two-sentence narration pattern unless the user expl
 
 Before writing those sentences, extract each concept's core role, choose one everyday system, and assign every concept a distinct life element. The mapping must be one-to-one, not a loose theme. If the user explicitly specifies different opening wording or a different number of concepts, record `opening.explicit_override: true` and preserve it.
 
+Choose one `opening.hook_type` for the opening:
+
+1. `pain_point_reframe`: challenge the belief that the topic needs an intimidating technical threshold, then turn to the familiar behavior.
+2. `suspense_question`: ask why the same topic can appear brilliant or ineffective, then put the answer in the familiar behavior.
+3. `curiosity_reveal`: connect a frontier topic to an everyday behavior with a surprising reveal.
+4. `scenario_immersion`: place the viewer in a concrete life scene before naming the concept; fill `life_example_scene_*`.
+
+Each option still includes a life mapping and time promise. Do not invent a fifth fixed hook; use a custom template only after an explicit user request.
+
 Build the shot in this order:
 
 1. During the first second, show the familiar behavior, object, or situation before asking viewers to process technical language.
@@ -98,7 +107,7 @@ Do not remove the end of a waveform. Retain the complete narration file and add 
 
 ## Platform-safe composition
 
-Reserve the configured safe area before positioning text. Compose in a logical design space, scale the complete scene uniformly, and place it below the top safe region. Inspect representative frames; metadata alone cannot prove the safe area is empty.
+Reserve the configured safe areas before positioning text. By default, leave the top 10%, right 20%, and bottom 20% blank for the platform UI. Compose all animation, text, arrows, and cards inside the remaining central region; do not let an arrowhead or card edge enter a forbidden side. Create render canvases with `Canvas.from_video_config(video)` or use equivalent bounds-aware math, then inspect representative frames because metadata alone cannot prove the zones are empty.
 
 ## QA acceptance
 
@@ -113,3 +122,4 @@ Reserve the configured safe area before positioning text. Compose in a logical d
 - Shot-boundary pauses fall within tolerance.
 - Resolution, frame rate, aspect ratio, audio, and subtitle policy match the config.
 - The entire file decodes without errors.
+- The top, right, and bottom platform-safe zones remain clear in representative frames.

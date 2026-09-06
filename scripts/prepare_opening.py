@@ -13,6 +13,34 @@ LIFE_NARRATION_TEMPLATE = (
     "只需要{time_promise}，我用{life_example}告诉你什么是{ai_topic}。"
 )
 LIFE_TITLE_TEMPLATE = "你每天{familiar_behavior}"
+HOOK_NARRATION_TEMPLATES = {
+    "pain_point_reframe": (
+        "大家都以为{ai_topic}需要极高的技术门槛，其实大错特错！"
+        "只要你看过{familiar_behavior}，就能秒懂它的底层逻辑。"
+        "给我{time_promise}，带你用{life_example}看透它的本质。"
+    ),
+    "suspense_question": (
+        "为什么有的{ai_topic}像个天才，有的却像人工智障？"
+        "答案就藏在{familiar_behavior}里。"
+        "只要{time_promise}，我用{life_example}为你揭秘{ai_topic}的核心秘密。"
+    ),
+    "curiosity_reveal": (
+        "顶级大厂是怎么训练{ai_topic}的？"
+        "说出来你可能不信，背后的原理和{familiar_behavior}一模一样。"
+        "{time_promise}，用{life_example}让你明白什么是真正的{ai_topic}。"
+    ),
+    "scenario_immersion": (
+        "别再死记硬背{ai_topic}那些复杂的概念了。"
+        "现在，想象一下{life_example_scene}，其实你已经掌握了它的精髓。"
+        "花{time_promise}，我们用{familiar_behavior}重新认识{ai_topic}。"
+    ),
+}
+HOOK_TITLE_TEMPLATES = {
+    "pain_point_reframe": "别把{ai_topic}想难了",
+    "suspense_question": "为什么{ai_topic}表现不同？",
+    "curiosity_reveal": "{ai_topic}的原理，竟然像{familiar_behavior}",
+    "scenario_immersion": "想象一下{life_example_scene}",
+}
 DEFAULT_CUES = {
     1: (0.48,),
     2: (0.38, 0.55),
@@ -67,6 +95,12 @@ def main():
     concepts = opening.get("concepts")
     explicit_override = opening.get("explicit_override") is True
     life_mapping = opening.get("hook_style") == "life_mapping" and not explicit_override
+    hook_type = opening.get("hook_type", "life_mapping") if life_mapping else "custom"
+    if life_mapping and hook_type not in {"life_mapping", *HOOK_NARRATION_TEMPLATES}:
+        raise SystemExit(
+            "opening.hook_type must be life_mapping, pain_point_reframe, "
+            "suspense_question, curiosity_reveal, or scenario_immersion"
+        )
     if life_mapping:
         domain_spoken = str(opening.get("domain_spoken", "")).strip()
         domain_display = str(opening.get("domain_display", "")).strip()
@@ -104,6 +138,18 @@ def main():
         life_example_display = require_text(
             opening.get("life_example_display"), "life_example_display"
         )
+        life_example_scene_spoken = str(opening.get("life_example_scene_spoken", "")).strip()
+        life_example_scene_display = str(opening.get("life_example_scene_display", "")).strip()
+        if hook_type == "scenario_immersion":
+            life_example_scene_spoken = require_text(
+                life_example_scene_spoken, "life_example_scene_spoken"
+            )
+            life_example_scene_display = require_text(
+                life_example_scene_display, "life_example_scene_display"
+            )
+        else:
+            life_example_scene_spoken = life_example_scene_spoken or life_example_spoken
+            life_example_scene_display = life_example_scene_display or life_example_display
         time_promise_spoken = require_text(
             opening.get("time_promise_spoken", "60秒"), "time_promise_spoken"
         )
@@ -139,27 +185,33 @@ def main():
         extra_spoken = {
             "familiar_behavior": familiar_behavior_spoken,
             "life_example": life_example_spoken,
+            "life_example_scene": life_example_scene_spoken,
             "time_promise": time_promise_spoken,
             "ai_topic": ai_topic_spoken,
         }
         extra_display = {
             "familiar_behavior": familiar_behavior_display,
             "life_example": life_example_display,
+            "life_example_scene": life_example_scene_display,
             "time_promise": time_promise_display,
             "ai_topic": ai_topic_display,
         }
 
-    narration_template = require_text(
-        opening.get(
+    if life_mapping and hook_type in HOOK_NARRATION_TEMPLATES:
+        narration_template = HOOK_NARRATION_TEMPLATES[hook_type]
+        title_template = HOOK_TITLE_TEMPLATES[hook_type]
+    else:
+        narration_template = require_text(
+            opening.get(
+                "narration_template",
+                LIFE_NARRATION_TEMPLATE if life_mapping else DEFAULT_NARRATION_TEMPLATE,
+            ),
             "narration_template",
-            LIFE_NARRATION_TEMPLATE if life_mapping else DEFAULT_NARRATION_TEMPLATE,
-        ),
-        "narration_template",
-    )
-    title_template = require_text(
-        opening.get("title_template", LIFE_TITLE_TEMPLATE if life_mapping else DEFAULT_TITLE_TEMPLATE),
-        "title_template",
-    )
+        )
+        title_template = require_text(
+            opening.get("title_template", LIFE_TITLE_TEMPLATE if life_mapping else DEFAULT_TITLE_TEMPLATE),
+            "title_template",
+        )
 
     shot = {
         "id": 1,
@@ -206,8 +258,10 @@ def main():
         shot.update(
             {
                 "hook_style": "life_mapping",
+                "hook_type": hook_type,
                 "familiar_behavior": extra_display["familiar_behavior"],
                 "life_example": extra_display["life_example"],
+                "life_example_scene": extra_display["life_example_scene"],
                 "time_promise": extra_display["time_promise"],
                 "ai_topic": extra_display["ai_topic"],
                 "concept_mappings": concept_mappings,

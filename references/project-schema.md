@@ -11,6 +11,8 @@ Store the project configuration as UTF-8 JSON. Paths are relative to the configu
     "height": 2560,
     "fps": 45,
     "safe_area_top": 0.1,
+    "safe_area_right": 0.2,
+    "safe_area_bottom": 0.2,
     "background": "#FFFFFF"
   },
   "audio": {
@@ -36,10 +38,13 @@ Store the project configuration as UTF-8 JSON. Paths are relative to the configu
     "required": true,
     "explicit_override": false,
     "hook_style": "life_mapping",
+    "hook_type": "pain_point_reframe",
     "familiar_behavior_spoken": "打篮球",
     "familiar_behavior_display": "打篮球",
     "life_example_spoken": "一场篮球比赛",
     "life_example_display": "一场篮球比赛",
+    "life_example_scene_spoken": "一支正在打总决赛的篮球队",
+    "life_example_scene_display": "一支正在打总决赛的篮球队",
     "time_promise_spoken": "60秒",
     "time_promise_display": "60秒",
     "ai_topic_spoken": "Agent、Tool、Skill和MultiAgent",
@@ -57,19 +62,19 @@ Store the project configuration as UTF-8 JSON. Paths are relative to the configu
       {"concept": "Tool", "core_role": "提供单一可调用动作", "life_element": "篮球"},
       {"concept": "Skill", "core_role": "组织一组动作形成稳定能力", "life_element": "运球突破"},
       {"concept": "Multi-agent", "core_role": "多个主体协作完成共同目标", "life_element": "整支球队"}
-    ],
-    "narration_template": "你每天{familiar_behavior}，其实已经理解了{ai_topic}。只需要{time_promise}，我用{life_example}告诉你什么是{ai_topic}。",
-    "title_template": "你每天{familiar_behavior}"
+    ]
   },
   "shots": [
     {
       "id": 1,
       "section": "opening",
       "hook_style": "life_mapping",
-      "spoken_text": "你每天打篮球，其实已经理解了Agent、Tool、Skill和MultiAgent。只需要60秒，我用一场篮球比赛告诉你什么是Agent、Tool、Skill和MultiAgent。",
-      "title_text": "你每天打篮球",
+      "hook_type": "pain_point_reframe",
+      "spoken_text": "大家都以为Agent、Tool、Skill和MultiAgent需要极高的技术门槛，其实大错特错！只要你看过打篮球，就能秒懂它的底层逻辑。给我60秒，带你用一场篮球比赛看透它的本质。",
+      "title_text": "别把Agent、Tool、Skill和Multi-agent想难了",
       "familiar_behavior": "打篮球",
       "life_example": "一场篮球比赛",
+      "life_example_scene": "一支正在打总决赛的篮球队",
       "time_promise": "60秒",
       "ai_topic": "Agent、Tool、Skill和Multi-agent",
       "concepts": ["Agent", "Tool", "Skill", "Multi-agent"],
@@ -123,16 +128,17 @@ Store the project configuration as UTF-8 JSON. Paths are relative to the configu
 - `opening`: the mandatory first-shot source of truth. For the default hook, fill the familiar behavior, life example, time promise, three or four concepts, and one mapping record per concept before running `scripts/prepare_opening.py`.
 - `explicit_override`: keep `false` for the standard opening. Set it to `true` only when the user explicitly supplies different opening wording or a different concept count; the helper then accepts one to four concepts.
 - `hook_style`: new projects use `life_mapping`. A legacy project without this field keeps its old opening behavior.
+- `hook_type`: choose `pain_point_reframe`, `suspense_question`, `curiosity_reveal`, or `scenario_immersion`. All four preserve the life mapping and time promise; missing this field uses the legacy `life_mapping` wording.
 - `familiar_behavior_*`: a behavior, object, or situation that can appear visually within the first second.
 - `life_example_*`: the familiar system used to carry the explanation.
+- `life_example_scene_*`: the concrete imagined scene for `scenario_immersion`; it is required only for that hook.
 - `time_promise_*`: a short, credible commitment such as `60秒`.
 - `ai_topic_*`: the topic named in both hook sentences. It may be an umbrella topic or a natural list; if omitted, the helper derives it from `concepts`.
 - `concept_mappings`: exactly one record per concept, in display order. Each record contains the exact display `concept`, its `core_role`, and a distinct `life_element` so the mapping remains one-to-one.
 - `domain_spoken` and each concept's `spoken`: pronunciation-safe TTS forms.
 - `domain_display` and each concept's `display`: exact on-screen forms.
 - `domain_spoken` and `domain_display` remain for backward compatibility and optional downstream scene metadata; the default life-mapping hook does not require them.
-- `narration_template`: supports `{familiar_behavior}`, `{life_example}`, `{time_promise}`, `{ai_topic}`, and `{concepts}`. `{concepts}` expands to a natural Chinese list.
-- `narration_template` and `title_template`: standard templates. Change them only when the user explicitly requests a different opening.
+- The four standard hooks are generated from `hook_type`. `narration_template` and `title_template` are reserved for explicit user overrides; they support `{familiar_behavior}`, `{life_example}`, `{life_example_scene}`, `{time_promise}`, `{ai_topic}`, and `{concepts}`.
 - `section`: one of `opening`, `explanation`, `transition`, or `summary`. The first shot is `opening`; the final shot is `summary`.
 - `concepts` on middle shots: headline concepts meaningfully explained by that shot. Across all `explanation` shots, cover every opening concept.
 - `summary_concepts`: exact display names summarized by the closing shot, in the same order as `opening.concepts`.
@@ -146,7 +152,7 @@ Store the project configuration as UTF-8 JSON. Paths are relative to the configu
 - `narrator_voice`: narration backend. Omit it or use `default` to preserve the existing Windows voice workflow. Use `mambo` only when the user explicitly requests the optional local Mambo voice.
 - `voice` and `base_rate`: settings for `narrator_voice: "default"`; they remain unchanged when Mambo is selected.
 - `audio.mambo` (optional): may contain `home`, `api_url`, and `speed`. `home` points to the MamboTTS app directory; otherwise the narration script checks `MAMBOTTS_HOME` and searches ancestor workspaces for `tools/mambotts/app`. `api_url` defaults to `http://127.0.0.1:9880`; `speed` defaults to `1.0` before shared post-processing tempo is applied.
-- `safe_area_top`: fraction of the complete frame that remains free of content.
+- `safe_area_top`, `safe_area_right`, and `safe_area_bottom`: fractions of the complete frame that remain free of animation, labels, arrows, and cards. Defaults are 10%, 20%, and 20%; content is centered in the remaining region.
 - `subtitles`: concept graphics do not change this value.
 
 Run `scripts/prepare_opening.py project.json` after filling `opening`. The default life-mapping hook requires three or four concepts and a complete one-to-one mapping. With an explicit user-approved override it accepts one to four concepts and preserves the custom narration template. Use `--force` only when deliberately refreshing an existing first shot.

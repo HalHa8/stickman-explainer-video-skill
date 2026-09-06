@@ -28,6 +28,7 @@ def validate_structure(data):
     concept_records = opening.get("concepts")
     explicit_override = opening.get("explicit_override") is True
     life_mapping = opening.get("hook_style") == "life_mapping" and not explicit_override
+    hook_type = opening.get("hook_type", "life_mapping") if life_mapping else "custom"
     allowed_counts = (1, 2, 3, 4) if explicit_override else (3, 4)
     if not isinstance(concept_records, list) or len(concept_records) not in allowed_counts:
         return errors + [
@@ -48,6 +49,14 @@ def validate_structure(data):
         return errors
 
     if life_mapping:
+        if hook_type not in {
+            "life_mapping",
+            "pain_point_reframe",
+            "suspense_question",
+            "curiosity_reveal",
+            "scenario_immersion",
+        }:
+            errors.append("opening.hook_type is not a supported life-mapping hook")
         for field in (
             "familiar_behavior_spoken",
             "familiar_behavior_display",
@@ -59,6 +68,11 @@ def validate_structure(data):
             value = opening.get(field)
             if not isinstance(value, str) or not value.strip():
                 errors.append(f"opening.{field} is required for life_mapping")
+        if hook_type == "scenario_immersion":
+            for field in ("life_example_scene_spoken", "life_example_scene_display"):
+                value = opening.get(field)
+                if not isinstance(value, str) or not value.strip():
+                    errors.append(f"opening.{field} is required for scenario_immersion")
         mappings = opening.get("concept_mappings")
         if not isinstance(mappings, list) or len(mappings) != len(concepts):
             errors.append("opening.concept_mappings must contain one record per concept")
@@ -96,6 +110,8 @@ def validate_structure(data):
     if life_mapping:
         if first.get("hook_style") != "life_mapping":
             errors.append("the opening shot must use hook_style=life_mapping")
+        if first.get("hook_type", "life_mapping") != hook_type:
+            errors.append("the opening shot hook_type must match opening.hook_type")
         for field in ("familiar_behavior", "life_example", "time_promise", "ai_topic"):
             value = first.get(field)
             if not isinstance(value, str) or not value.strip():

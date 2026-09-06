@@ -1,21 +1,57 @@
 #!/usr/bin/env python3
-"""Scalable primitives for topic-specific 2D stickman renderers."""
+"""Scalable primitives that keep content inside the platform-safe center region."""
 
 import math
 from PIL import Image, ImageDraw, ImageFont
 
 
 class Canvas:
-    def __init__(self, width=1440, height=2560, safe_top=0.10, background="#FFFFFF"):
+    def __init__(
+        self,
+        width=1440,
+        height=2560,
+        safe_top=0.10,
+        background="#FFFFFF",
+        safe_right=0.20,
+        safe_bottom=0.20,
+    ):
         self.width = int(width)
         self.height = int(height)
         self.safe_top = int(self.height * safe_top)
+        self.safe_right = int(self.width * safe_right)
+        self.safe_bottom = int(self.height * safe_bottom)
+        self.safe_left = 0
         self.background = background
+        self.content_left = self.safe_left
+        self.content_top = self.safe_top
+        self.content_right = self.width - self.safe_right
+        self.content_bottom = self.height - self.safe_bottom
+        self.content_width = self.content_right - self.content_left
+        self.content_height = self.content_bottom - self.content_top
+        if self.content_width <= 0 or self.content_height <= 0:
+            raise ValueError("Platform safe areas leave no drawable content region")
         self.image = Image.new("RGB", (self.width, self.height), background)
         self.draw = ImageDraw.Draw(self.image)
-        self.scale = min(self.width / 720, (self.height - self.safe_top) / 1280)
-        self.offset_x = (self.width - 720 * self.scale) / 2
-        self.offset_y = self.safe_top
+        self.scale = min(self.content_width / 720, self.content_height / 1280)
+        self.offset_x = self.content_left + (self.content_width - 720 * self.scale) / 2
+        self.offset_y = self.content_top + (self.content_height - 1280 * self.scale) / 2
+
+    @property
+    def content_bounds(self):
+        """Physical pixel bounds available for animation and on-screen text."""
+        return (self.content_left, self.content_top, self.content_right, self.content_bottom)
+
+    @classmethod
+    def from_video_config(cls, video):
+        """Create a canvas that applies every configured platform-safe boundary."""
+        return cls(
+            video["width"],
+            video["height"],
+            video.get("safe_area_top", 0.10),
+            video.get("background", "#FFFFFF"),
+            video.get("safe_area_right", 0.20),
+            video.get("safe_area_bottom", 0.20),
+        )
 
     def point(self, x, y):
         return self.offset_x + x * self.scale, self.offset_y + y * self.scale

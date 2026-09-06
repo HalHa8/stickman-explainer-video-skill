@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate metadata, full decode, subtitles, safe area, and shot pauses."""
+"""Validate metadata, full decode, subtitles, platform-safe zones, and shot pauses."""
 
 import argparse
 import json
@@ -96,8 +96,10 @@ def main():
     try:
         from PIL import Image
         expected = data["video"]
-        ratio = float(expected.get("safe_area_top", 0.0))
-        if ratio > 0 and video_streams:
+        top_ratio = float(expected.get("safe_area_top", 0.0))
+        right_ratio = float(expected.get("safe_area_right", 0.20))
+        bottom_ratio = float(expected.get("safe_area_bottom", 0.20))
+        if any((top_ratio, right_ratio, bottom_ratio)) and video_streams:
             duration = float(metadata.get("format", {}).get("duration", 0.0))
             background = expected.get("background", "#FFFFFF").lstrip("#")
             target_rgb = tuple(int(background[index:index + 2], 16) for index in (0, 2, 4))
@@ -106,12 +108,27 @@ def main():
                     frame = Path(temp) / f"frame_{index}.png"
                     run([ffmpeg, "-v", "error", "-ss", f"{timestamp:.3f}", "-i", str(video), "-frames:v", "1", str(frame)])
                     image = Image.open(frame).convert("RGB")
-                    region = image.crop((0, 0, image.width, int(image.height * ratio)))
-                    pixel_source = region.get_flattened_data() if hasattr(region, "get_flattened_data") else region.getdata()
-                    pixels = list(pixel_source)
-                    matching = sum(all(abs(pixel[channel] - target_rgb[channel]) <= 12 for channel in range(3)) for pixel in pixels)
-                    if matching / max(1, len(pixels)) < 0.995:
-                        errors.append(f"top safe area is not clear at {timestamp:.3f}s")
+                    regions = {
+                        "top": (0, 0, image.width, int(image.height * top_ratio)),
+                        "right": (int(image.width * (1 - right_ratio)), 0, image.width, image.height),
+                        "bottom": (0, int(image.height * (1 - bottom_ratio)), image.width, image.height),
+                    }
+                    for name, box in regions.items():
+                        if box[2] <= box[0] or box[3] <= box[1]:
+                            continue
+                        region = image.crop(box)
+                        pixel_source = (
+                            region.get_flattened_data()
+                            if hasattr(region, "get_flattened_data")
+                            else region.getdata()
+                        )
+                        pixels = list(pixel_source)
+                        matching = sum(
+                            all(abs(pixel[channel] - target_rgb[channel]) <= 12 for channel in range(3))
+                            for pixel in pixels
+                        )
+                        if matching / max(1, len(pixels)) < 0.995:
+                            errors.append(f"{name} safe area is not clear at {timestamp:.3f}s")
                 safe_area_checked = True
     except (ImportError, subprocess.CalledProcessError, OSError, ValueError) as exc:
         warnings.append(f"safe-area pixel check skipped: {exc}")

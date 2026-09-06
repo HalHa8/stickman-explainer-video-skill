@@ -30,7 +30,7 @@ Production artifacts include polished narration, storyboards, pilot images, gene
 
 Read [storyboard-guidelines.md](references/storyboard-guidelines.md) before drafting narration or shots. Read [project-schema.md](references/project-schema.md) when initializing or building a project. Read [basketball-example.md](references/basketball-example.md) only when a concrete example or the basketball template is useful.
 
-## Life-mapping opening hook
+## Life-mapping opening hooks
 
 Unless the user explicitly requests a different opening, every video created with this skill must begin with these two narration sentences:
 
@@ -60,6 +60,15 @@ The first shot must:
 
 Use `opening.concept_mappings` as the mapping source of truth. Every mapping records the concept, its core role, and its distinct life element. When the topic contains more than four candidates, group or select the three or four headline concepts during concept design; in Review as you go mode, include that choice and the mapping in concept approval.
 
+Select `opening.hook_type` to vary the emotional lead while preserving the familiar-life mapping and time promise:
+
+- `pain_point_reframe`: challenges the belief that the topic is too technical, then lowers the barrier with the familiar behavior.
+- `suspense_question`: opens with a contrast question and promises the answer through the life example.
+- `curiosity_reveal`: creates a surprising link between a frontier topic and an everyday behavior.
+- `scenario_immersion`: starts with a concrete imagined scene; requires `life_example_scene_*`.
+
+Legacy `life_mapping` remains supported for existing projects. For the four selectable hooks, the opening helper owns the approved wording; reserve custom templates for explicit user overrides.
+
 ## Mandatory total–part–total structure
 
 Every video's narration and storyboard must use a `总—分—总` structure unless the user explicitly requests another structure:
@@ -80,7 +89,7 @@ Avoid stacked endings such as a conclusion followed by `最后记住` and anothe
 ## Default production profile
 
 - Vertical 9:16, 1440×2560, 45fps.
-- Reserve the top 10% as a blank platform-safe area. Scale content to fit below it; do not crop the scene.
+- Reserve the top 10%, right 20%, and bottom 20% as blank platform-safe areas. Keep animation, labels, arrows, and cards inside the remaining center region; do not crop the scene.
 - Use a consistent 1.2× narration tempo while preserving pitch.
 - Keep `audio.narrator_voice` at `default` unless the user explicitly requests another supported voice.
 - Keep about 1.0 second of silence between spoken shot segments.
@@ -102,6 +111,7 @@ Treat these as defaults. Follow explicit project-specific overrides.
 
 - Preserve the latest user-approved concept definitions across narration, storyboard, and visuals. Do not reintroduce a rejected analogy or definition.
 - Keep the two-sentence life-mapping hook, first-second familiar scene, recognition contrast, time promise, three-or-four-concept order, and final all-visible state unless the user explicitly overrides the opening.
+- Keep the top, right, and bottom platform-safe zones blank. Use `Canvas` or equivalent centralized layout math so no animation, text, card, or arrow enters those zones.
 - Preserve the `总—分—总` structure: opening concept overview, complete middle breakdown, and a closing synthesis grounded in the same approved concepts.
 - End with one concise synthesis followed by one comment question; do not repeat the complete summary twice.
 - Keep `spoken_text` separate from `display_text`. A screen may show `Multi-agent` while TTS receives `MultiAgent` to avoid an unnatural pause.
