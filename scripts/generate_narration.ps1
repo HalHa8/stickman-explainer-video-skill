@@ -1,6 +1,7 @@
 param(
     [Parameter(Mandatory = $true)]
-    [string]$Config
+    [string]$Config,
+    [string]$VoiceOverride = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -19,7 +20,12 @@ $audioRoot = Join-Path $outputRoot 'audio\raw'
 New-Item -ItemType Directory -Force -Path $audioRoot | Out-Null
 
 $synth = New-Object System.Speech.Synthesis.SpeechSynthesizer
-$synth.SelectVoice([string]$data.audio.voice)
+$selectedVoice = if ([string]::IsNullOrWhiteSpace($VoiceOverride)) {
+    [string]$data.audio.voice
+} else {
+    $VoiceOverride
+}
+$synth.SelectVoice($selectedVoice)
 $synth.Rate = [int]$data.audio.base_rate
 $synth.Volume = 100
 

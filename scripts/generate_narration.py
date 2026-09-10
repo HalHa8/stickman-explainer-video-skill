@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Generate per-shot narration with the existing Windows voice or MamboTTS."""
+"""Generate per-shot narration with Xiaoxiao, Windows TTS, or MamboTTS."""
 
 import argparse
+import importlib.util
 import json
 import math
 import os
+import shutil
 import struct
 import subprocess
 import sys
@@ -19,6 +21,8 @@ from pathlib import Path
 DEFAULT_API_URL = "http://127.0.0.1:9880"
 DEFAULT_PROMPT = "大家好，欢迎来到我的频道，今天给大家分享一个有趣的内容"
 DEFAULT_CUT_PUNC = "，。？！；：、…,.;?!"
+DEFAULT_XIAOXIAO_VOICE = "zh-CN-XiaoxiaoNeural"
+DEFAULT_HUIHUI_FALLBACK = "Microsoft Huihui Desktop"
 
 
 def api_is_ready(api_url):
@@ -175,15 +179,117 @@ def synthesize_mambo(api_url, text, output, ref_audio, speed, timeout):
     return verify_wav(output)
 
 
-def generate_default(config_path):
+def generate_default(config_path, voice_override=None):
     if sys.platform != "win32":
         raise RuntimeError("The existing default narrator requires Windows TTS.")
     script = Path(__file__).with_name("generate_narration.ps1")
-    subprocess.run([
+    command = [
         "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
         "-File", str(script), "-Config", str(config_path),
-    ], check=True)
-    return {"ok": True, "narrator_voice": "default"}
+    ]
+    if voice_override:
+        command.extend(["-VoiceOverride", voice_override])
+    subprocess.run(command, check=True)
+    return {
+        "ok": True,
+        "narrator_voice": "default",
+        "actual_voice": voice_override,
+    }
+
+
+def resolve_ffmpeg():
+    found = shutil.which("ffmpeg")
+    if found:
+        return found
+    local_app_data = os.environ.get("LOCALAPPDATA")
+    if local_app_data:
+        candidate = Path(local_app_data) / "Microsoft" / "WinGet" / "Links" / "ffmpeg.exe"
+        if candidate.is_file():
+            return str(candidate)
+    raise RuntimeError("FFmpeg is required to convert Xiaoxiao audio to WAV")
+
+
+def resolve_edge_tts_command():
+    if importlib.util.find_spec("edge_tts") is not None:
+        return [sys.executable, "-m", "edge_tts"]
+    candidates = [os.environ.get("EDGE_TTS_PYTHON"), shutil.which("python")]
+    checked = set()
+    for candidate in candidates:
+        if not candidate:
+            continue
+        executable = str(Path(candidate).resolve())
+        if executable in checked:
+            continue
+        checked.add(executable)
+        result = subprocess.run(
+            [executable, "-c", "import edge_tts"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        if result.returncode == 0:
+            return [executable, "-m", "edge_tts"]
+    raise RuntimeError("Python package edge-tts is not installed in an available runtime")
+
+
+def generate_xiaoxiao(config_path, config):
+    audio_config = config.get("audio", {})
+    requested_voice = str(audio_config.get("voice", DEFAULT_XIAOXIAO_VOICE)).strip()
+    fallback_voice = str(
+        audio_config.get("fallback_voice", DEFAULT_HUIHUI_FALLBACK)
+    ).strip()
+    allow_fallback = audio_config.get("allow_voice_fallback", True) is True
+    output_root = resolve_output_root(config_path, config)
+    raw_dir = output_root / "audio" / "raw"
+    raw_dir.mkdir(parents=True, exist_ok=True)
+
+    try:
+        edge_tts_command = resolve_edge_tts_command()
+        ffmpeg = resolve_ffmpeg()
+        reports = []
+        for shot in config.get("shots", []):
+            text = str(shot.get("spoken_text", "")).strip()
+            if not text:
+                raise RuntimeError(f"Shot {shot.get('id')} has no spoken_text")
+            shot_id = int(shot["id"])
+            target = raw_dir / f"shot_{shot_id:02d}.wav"
+            media = raw_dir / f"shot_{shot_id:02d}.xiaoxiao.mp3"
+            if media.exists():
+                media.unlink()
+            subprocess.run([
+                *edge_tts_command,
+                "--voice", requested_voice,
+                "--rate", str(audio_config.get("xiaoxiao_rate", "+0%")),
+                "--text", text,
+                "--write-media", str(media),
+            ], check=True)
+            subprocess.run([
+                ffmpeg, "-hide_banner", "-loglevel", "error", "-y",
+                "-i", str(media), "-ac", "1", "-ar", "24000",
+                "-c:a", "pcm_s16le", str(target),
+            ], check=True)
+            media.unlink(missing_ok=True)
+            reports.append(verify_wav(target))
+        return {
+            "ok": True,
+            "narrator_voice": "xiaoxiao",
+            "requested_voice": requested_voice,
+            "actual_voice": requested_voice,
+            "voice_fallback_used": False,
+            "files": reports,
+        }
+    except Exception as exc:
+        for media in raw_dir.glob("*.xiaoxiao.mp3"):
+            media.unlink(missing_ok=True)
+        if not allow_fallback or not fallback_voice:
+            raise
+        report = generate_default(config_path, fallback_voice)
+        report.update({
+            "requested_voice": requested_voice,
+            "actual_voice": fallback_voice,
+            "voice_fallback_used": True,
+            "fallback_reason": str(exc),
+        })
+        return report
 
 
 def generate_mambo(config_path, config, args):
@@ -225,7 +331,7 @@ def generate_mambo(config_path, config, args):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("config")
-    parser.add_argument("--narrator-voice", choices=("default", "mambo"))
+    parser.add_argument("--narrator-voice", choices=("xiaoxiao", "default", "mambo"))
     parser.add_argument("--mambotts-home")
     parser.add_argument("--api-url")
     parser.add_argument("--speed", type=float)
@@ -236,8 +342,10 @@ def main():
 
     config_path = Path(args.config).resolve()
     config = json.loads(config_path.read_text(encoding="utf-8"))
-    narrator_voice = args.narrator_voice or config.get("audio", {}).get("narrator_voice", "default")
-    if narrator_voice == "default":
+    narrator_voice = args.narrator_voice or config.get("audio", {}).get("narrator_voice", "xiaoxiao")
+    if narrator_voice == "xiaoxiao":
+        report = generate_xiaoxiao(config_path, config)
+    elif narrator_voice == "default":
         report = generate_default(config_path)
     elif narrator_voice == "mambo":
         report = generate_mambo(config_path, config, args)

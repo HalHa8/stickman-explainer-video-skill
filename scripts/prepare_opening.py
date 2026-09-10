@@ -125,6 +125,7 @@ def main():
     extra_spoken = {}
     extra_display = {}
     concept_mappings = []
+    time_promise_visualization = "spoken_only"
     if life_mapping:
         familiar_behavior_spoken = require_text(
             opening.get("familiar_behavior_spoken"), "familiar_behavior_spoken"
@@ -156,6 +157,13 @@ def main():
         time_promise_display = require_text(
             opening.get("time_promise_display", "60秒"), "time_promise_display"
         )
+        time_promise_visualization = str(
+            opening.get("time_promise_visualization", "spoken_only")
+        ).strip()
+        if time_promise_visualization not in {"spoken_only", "user_requested_visual"}:
+            raise SystemExit(
+                "opening.time_promise_visualization must be spoken_only or user_requested_visual"
+            )
         ai_topic_spoken = str(opening.get("ai_topic_spoken", "")).strip() or join_concepts(
             spoken_concepts
         )
@@ -240,9 +248,17 @@ def main():
         ],
         "required_milestones": (
             [
-                "familiar_scene_visible_in_first_second",
+                *(
+                    ["ai_contrast_visible_in_first_second", "analogy_bridge_visible"]
+                    if hook_type == "suspense_question"
+                    else ["familiar_scene_visible_in_first_second"]
+                ),
                 "recognition_contrast_visible",
-                "time_commitment_visible",
+                (
+                    "time_promise_spoken_only"
+                    if time_promise_visualization == "spoken_only"
+                    else "time_visualization_user_requested"
+                ),
                 *[f"concept_{index}_visible" for index in range(1, len(display_concepts) + 1)],
                 "all_concept_chips_visible",
             ]
@@ -263,6 +279,7 @@ def main():
                 "life_example": extra_display["life_example"],
                 "life_example_scene": extra_display["life_example_scene"],
                 "time_promise": extra_display["time_promise"],
+                "time_promise_visualization": time_promise_visualization,
                 "ai_topic": extra_display["ai_topic"],
                 "concept_mappings": concept_mappings,
             }

@@ -24,6 +24,18 @@ Distinguish these layers:
 
 The exact definitions come from the approved project, not from this generic pattern.
 
+## High-retention editorial framing
+
+Decide the editorial intensity before polishing narration. When the user requests a short-video, traffic-oriented, or controversy-driven style:
+
+- Preserve explicitly approved bold language and strong equivalence claims instead of automatically hedging every analogy.
+- Use recognizable personas, dramatic before-and-after arcs, rivalry, conflict, and controversial moments to create curiosity and retention.
+- Documentary completeness is not required: chronology may be compressed and secondary context omitted when that does not change the AI lesson.
+- A controversial anecdote may represent public perception or conflict, but do not fabricate quotations or concrete achievements. Avoid presenting a disputed interpretation as settled proof when a short phrase such as `这句争议言论让很多人觉得` retains the same tension.
+- Apply factual rigor most strongly to the AI concept chain. A provocative sports metaphor must not turn SFT into RL, RL into RLHF, or complete alignment into a guaranteed outcome.
+
+In review materials, separate `editorial framing` from `technical mapping` so the user can deliberately approve a provocative hook while still correcting the instructional mechanism.
+
 ## Life-mapping opening shot
 
 Every video begins with this two-sentence narration pattern unless the user explicitly overrides it:
@@ -45,12 +57,12 @@ Each option still includes a life mapping and time promise. Do not invent a fift
 
 Build the shot in this order:
 
-1. During the first second, show the familiar behavior, object, or situation before asking viewers to process technical language.
+1. For an AI-behavior `suspense_question`, use the first second to show the actual contrast being asked about—for example, one model answering coherently beside another fabricating an answer—then transition to the familiar analogy that explains it. For other hook types, show the familiar behavior, object, or situation first.
 2. Complete the recognition contrast: the viewer realizes that the familiar behavior already contains the AI idea.
-3. Show the short time promise and the life example that will carry the explanation.
+3. Speak the short time promise and show the life example that will carry the explanation. Do not turn the time promise into a timer, countdown, clock, progress ring, or equivalent graphic unless the user explicitly requests time visualization.
 4. Reveal all three or four concept labels in narration order and hold the completed layout long enough to read.
 
-Use a balanced three-card layout for three concepts or a compact 2×2 layout for four when appropriate. The familiar character, prop, or background is the opening anchor; labels support it without covering the action. Required milestones are the familiar scene within the first second, recognition contrast, time commitment, each ordered concept reveal, and the final all-visible state.
+Use a balanced three-card layout for three concepts or a compact 2×2 layout for four when appropriate. The concrete opening scene is the anchor; labels support it without covering the action. Required milestones are the first-second AI contrast or familiar scene, the analogy bridge, recognition contrast, spoken time commitment, each ordered concept reveal, and the final all-visible state.
 
 The physical top 10% remains completely blank. “At the top of the screen” means the top of the safe content region below that blank area. If timing becomes tight, shorten empty setup and decorative motion first; never drop, overlap, or truncate a concept reveal.
 
@@ -109,16 +121,37 @@ Do not remove the end of a waveform. Retain the complete narration file and add 
 
 Reserve the configured safe areas before positioning text. By default, leave the top 10%, right 20%, and bottom 20% blank for the platform UI. Compose all animation, text, arrows, and cards inside the remaining central region; do not let an arrowhead or card edge enter a forbidden side. Create render canvases with `Canvas.from_video_config(video)` or use equivalent bounds-aware math, then inspect representative frames because metadata alone cannot prove the zones are empty.
 
+## Animation, cards, and information hierarchy
+
+When a card, comparison row, diagram, or split panel contains a character or object, treat that region as a miniature animated scene rather than a decorated static infographic:
+
+1. bring the card or panel into the layout with a short, readable entrance;
+2. animate the action named by the narration inside it, such as a ball traveling, a defender closing out, or a player changing direction;
+3. reveal the consequence only after the action, such as a check mark, interference state, ranking badge, or concept label;
+4. hold the completed state long enough to understand the relationship.
+
+For several cards, stagger their entrances and action beats so the viewer knows where to look. Do not animate every element simultaneously, and do not count border pulses or card movement as a substitute for the actual narrated action.
+
+In dense shots, group information by function and reading order. Definitions, quotations, diagrams, action scenes, metrics, and conclusions should occupy separate columns, rows, or timed phases. Avoid placing a speech bubble over a diagram, a label over a character, or a conclusion pill across another information group. If the layout feels crowded, remove decorative elements or sequence the information before reducing legibility.
+
+Use metrics only when they clarify the mechanism. If a project or cited source supplies a trustworthy value, label the number and its scope. Otherwise use a scoped qualitative indicator such as `战术执行失误率 ↓`; do not invent a percentage merely to make a graphic look quantitative.
+
+Preview motion-dependent shots at no fewer than three meaningful states: entry, mid-action, and final hold. Check visual focus, collisions, completed action, consequence order, and safe-area compliance at each state before rendering the full video.
+
 ## QA acceptance
 
 - All approved concepts remain consistent.
 - Spoken and displayed forms are correct.
 - Required visual milestones appear in order.
-- The first second shows a familiar life element; the recognition contrast, time promise, and all three or four concept labels appear in spoken order, unless explicitly overridden.
+- The first second shows either the real AI contrast for an AI-behavior suspense question or a familiar life element for other hooks; the analogy bridge, recognition contrast, time promise, and all three or four concept labels appear in spoken order unless explicitly overridden.
+- Time promises are not visualized with timers, countdowns, clocks, or progress rings unless explicitly requested.
 - Every introduced concept receives a middle explanation beat.
 - The final screen preserves the established concepts and introduces no new headline concept.
 - The narration ends with one concise synthesis and one topic-specific comment question, without a duplicate full recap.
 - Every final syllable is complete.
+- Cards and diagrams that describe actions show the actual action and its consequence, not only a static pose or decorative entrance.
+- Dense layouts remain legible at entry, mid-action, and final hold, with no collisions between labels, bubbles, arrows, characters, or result badges.
+- Any displayed numeric metric is supported; unsupported metrics use a clearly scoped qualitative trend without fabricated values.
 - Shot-boundary pauses fall within tolerance.
 - Resolution, frame rate, aspect ratio, audio, and subtitle policy match the config.
 - The entire file decodes without errors.

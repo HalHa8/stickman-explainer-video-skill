@@ -68,6 +68,13 @@ def validate_structure(data):
             value = opening.get(field)
             if not isinstance(value, str) or not value.strip():
                 errors.append(f"opening.{field} is required for life_mapping")
+        time_promise_visualization = opening.get(
+            "time_promise_visualization", "spoken_only"
+        )
+        if time_promise_visualization not in {"spoken_only", "user_requested_visual"}:
+            errors.append(
+                "opening.time_promise_visualization must be spoken_only or user_requested_visual"
+            )
         if hook_type == "scenario_immersion":
             for field in ("life_example_scene_spoken", "life_example_scene_display"):
                 value = opening.get(field)
@@ -117,10 +124,20 @@ def validate_structure(data):
             if not isinstance(value, str) or not value.strip():
                 errors.append(f"the opening shot must contain {field}")
         opening_milestones = first.get("required_milestones", [])
+        anchor_milestones = (
+            ("ai_contrast_visible_in_first_second", "analogy_bridge_visible")
+            if hook_type == "suspense_question"
+            else ("familiar_scene_visible_in_first_second",)
+        )
+        time_milestone = (
+            "time_promise_spoken_only"
+            if opening.get("time_promise_visualization", "spoken_only") == "spoken_only"
+            else "time_visualization_user_requested"
+        )
         for milestone in (
-            "familiar_scene_visible_in_first_second",
+            *anchor_milestones,
             "recognition_contrast_visible",
-            "time_commitment_visible",
+            time_milestone,
             "all_concept_chips_visible",
         ):
             if milestone not in opening_milestones:

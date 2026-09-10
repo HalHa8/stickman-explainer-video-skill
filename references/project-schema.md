@@ -16,8 +16,10 @@ Store the project configuration as UTF-8 JSON. Paths are relative to the configu
     "background": "#FFFFFF"
   },
   "audio": {
-    "narrator_voice": "default",
-    "voice": "Microsoft Huihui Desktop",
+    "narrator_voice": "xiaoxiao",
+    "voice": "zh-CN-XiaoxiaoNeural",
+    "fallback_voice": "Microsoft Huihui Desktop",
+    "allow_voice_fallback": true,
     "base_rate": 2,
     "tempo": 1.2,
     "inter_shot_pause": 1.0,
@@ -39,6 +41,7 @@ Store the project configuration as UTF-8 JSON. Paths are relative to the configu
     "explicit_override": false,
     "hook_style": "life_mapping",
     "hook_type": "pain_point_reframe",
+    "time_promise_visualization": "spoken_only",
     "familiar_behavior_spoken": "打篮球",
     "familiar_behavior_display": "打篮球",
     "life_example_spoken": "一场篮球比赛",
@@ -87,7 +90,7 @@ Store the project configuration as UTF-8 JSON. Paths are relative to the configu
       "required_milestones": [
         "familiar_scene_visible_in_first_second",
         "recognition_contrast_visible",
-        "time_commitment_visible",
+        "time_promise_spoken_only",
         "concept_1_visible",
         "concept_2_visible",
         "concept_3_visible",
@@ -128,7 +131,8 @@ Store the project configuration as UTF-8 JSON. Paths are relative to the configu
 - `opening`: the mandatory first-shot source of truth. For the default hook, fill the familiar behavior, life example, time promise, three or four concepts, and one mapping record per concept before running `scripts/prepare_opening.py`.
 - `explicit_override`: keep `false` for the standard opening. Set it to `true` only when the user explicitly supplies different opening wording or a different concept count; the helper then accepts one to four concepts.
 - `hook_style`: new projects use `life_mapping`. A legacy project without this field keeps its old opening behavior.
-- `hook_type`: choose `pain_point_reframe`, `suspense_question`, `curiosity_reveal`, or `scenario_immersion`. All four preserve the life mapping and time promise; missing this field uses the legacy `life_mapping` wording.
+- `hook_type`: choose `pain_point_reframe`, `suspense_question`, `curiosity_reveal`, or `scenario_immersion`. An AI-behavior `suspense_question` shows the actual AI contrast first and then reveals the life analogy; the other hooks normally lead with the familiar system. All four preserve the life mapping and time promise; missing this field uses the legacy `life_mapping` wording.
+- `time_promise_visualization`: use `spoken_only` by default. Do not render timers, countdowns, clocks, or progress rings unless an explicit user request changes this field.
 - `familiar_behavior_*`: a behavior, object, or situation that can appear visually within the first second.
 - `life_example_*`: the familiar system used to carry the explanation.
 - `life_example_scene_*`: the concrete imagined scene for `scenario_immersion`; it is required only for that hook.
@@ -149,8 +153,10 @@ Store the project configuration as UTF-8 JSON. Paths are relative to the configu
 - `cue`: normalized progress from 0 to 1 by default. A project may use seconds, but must use one convention consistently.
 - `required_milestones`: visual states that must appear even when the shot becomes shorter.
 - `inter_shot_pause`: desired silence between the end of one spoken segment and the start of the next, not merely the gap between media files.
-- `narrator_voice`: narration backend. Omit it or use `default` to preserve the existing Windows voice workflow. Use `mambo` only when the user explicitly requests the optional local Mambo voice.
-- `voice` and `base_rate`: settings for `narrator_voice: "default"`; they remain unchanged when Mambo is selected.
+- `narrator_voice`: narration backend. Omit it or use `xiaoxiao` for the default Xiaoxiao neural voice. Use `default` only to explicitly select Windows TTS, and use `mambo` only when the user explicitly requests the optional local Mambo voice.
+- `voice`: Xiaoxiao voice identifier for `narrator_voice: "xiaoxiao"`, normally `zh-CN-XiaoxiaoNeural`; with `narrator_voice: "default"`, it remains the selected Windows TTS voice.
+- `fallback_voice` and `allow_voice_fallback`: optional local Windows fallback. When used, record the requested and actual voice rather than silently substituting it.
+- `base_rate`: Windows TTS rate used only by the explicit default backend or Huihui fallback.
 - `audio.mambo` (optional): may contain `home`, `api_url`, and `speed`. `home` points to the MamboTTS app directory; otherwise the narration script checks `MAMBOTTS_HOME` and searches ancestor workspaces for `tools/mambotts/app`. `api_url` defaults to `http://127.0.0.1:9880`; `speed` defaults to `1.0` before shared post-processing tempo is applied.
 - `safe_area_top`, `safe_area_right`, and `safe_area_bottom`: fractions of the complete frame that remain free of animation, labels, arrows, and cards. Defaults are 10%, 20%, and 20%; content is centered in the remaining region.
 - `subtitles`: concept graphics do not change this value.
