@@ -11,7 +11,7 @@ Store the project configuration as UTF-8 JSON. Paths are relative to the configu
     "height": 2560,
     "fps": 45,
     "safe_area_top": 0.1,
-    "safe_area_right": 0.2,
+    "safe_area_right": 0.1,
     "safe_area_bottom": 0.2,
     "background": "#FFFFFF"
   },
@@ -21,8 +21,8 @@ Store the project configuration as UTF-8 JSON. Paths are relative to the configu
     "fallback_voice": "Microsoft Huihui Desktop",
     "allow_voice_fallback": true,
     "base_rate": 2,
-    "tempo": 1.2,
-    "inter_shot_pause": 1.0,
+    "tempo": 1.3,
+    "inter_shot_pause": 0.5,
     "final_hold": 0.8,
     "gain_db": 4.0,
     "peak_limit": 0.95,
@@ -158,7 +158,7 @@ Store the project configuration as UTF-8 JSON. Paths are relative to the configu
 - `fallback_voice` and `allow_voice_fallback`: optional local Windows fallback. When used, record the requested and actual voice rather than silently substituting it.
 - `base_rate`: Windows TTS rate used only by the explicit default backend or Huihui fallback.
 - `audio.mambo` (optional): may contain `home`, `api_url`, and `speed`. `home` points to the MamboTTS app directory; otherwise the narration script checks `MAMBOTTS_HOME` and searches ancestor workspaces for `tools/mambotts/app`. `api_url` defaults to `http://127.0.0.1:9880`; `speed` defaults to `1.0` before shared post-processing tempo is applied.
-- `safe_area_top`, `safe_area_right`, and `safe_area_bottom`: fractions of the complete frame that remain free of animation, labels, arrows, and cards. Defaults are 10%, 20%, and 20%; content is centered in the remaining region.
+- `safe_area_top`, `safe_area_right`, and `safe_area_bottom`: fractions of the complete frame that remain free of animation, labels, arrows, and cards. Defaults are 10%, 10%, and 20%. The main composition stays centered on the complete frame's physical centerline; asymmetric safe areas constrain scale but never redefine the visual center.
 - `subtitles`: concept graphics do not change this value.
 
 Run `scripts/prepare_opening.py project.json` after filling `opening`. The default life-mapping hook requires three or four concepts and a complete one-to-one mapping. With an explicit user-approved override it accepts one to four concepts and preserves the custom narration template. Use `--force` only when deliberately refreshing an existing first shot.

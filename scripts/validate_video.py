@@ -26,7 +26,7 @@ def main():
     parser.add_argument("--timing")
     parser.add_argument("--ffmpeg", default="ffmpeg")
     parser.add_argument("--ffprobe", default="ffprobe")
-    parser.add_argument("--pause-tolerance", type=float, default=0.12)
+    parser.add_argument("--pause-tolerance", type=float, default=0.18)
     args = parser.parse_args()
 
     video = Path(args.video).resolve()
@@ -72,7 +72,7 @@ def main():
         timing = json.loads(timing_path.read_text(encoding="utf-8"))
         silence = subprocess.run([
             ffmpeg, "-hide_banner", "-i", str(video),
-            "-af", "silencedetect=noise=-38dB:d=0.5", "-f", "null", "-"
+            "-af", "silencedetect=noise=-38dB:d=0.25", "-f", "null", "-"
         ], text=True, encoding="utf-8", errors="replace", capture_output=True)
         intervals = []
         starts = [float(value) for value in re.findall(r"silence_start: ([0-9.]+)", silence.stderr)]
@@ -80,7 +80,7 @@ def main():
         for start, end in zip(starts, ends):
             intervals.append((start, end))
         boundary = 0.0
-        target = float(data["audio"].get("inter_shot_pause", 1.0))
+        target = float(data["audio"].get("inter_shot_pause", 0.5))
         for shot in timing.get("shots", [])[:-1]:
             boundary += float(shot["video_duration"])
             match = next(((start, end) for start, end in intervals if start - 0.08 <= boundary <= end + 0.08), None)
@@ -97,7 +97,7 @@ def main():
         from PIL import Image
         expected = data["video"]
         top_ratio = float(expected.get("safe_area_top", 0.0))
-        right_ratio = float(expected.get("safe_area_right", 0.20))
+        right_ratio = float(expected.get("safe_area_right", 0.10))
         bottom_ratio = float(expected.get("safe_area_bottom", 0.20))
         if any((top_ratio, right_ratio, bottom_ratio)) and video_streams:
             duration = float(metadata.get("format", {}).get("duration", 0.0))

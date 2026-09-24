@@ -101,16 +101,21 @@ Avoid stacked endings such as a conclusion followed by `最后记住` and anothe
 ## Default production profile
 
 - Vertical 9:16, 1440×2560, 45fps.
-- Reserve the top 10%, right 20%, and bottom 20% as blank platform-safe areas. Keep animation, labels, arrows, and cards inside the remaining center region; do not crop the scene.
+- Reserve the top 10%, right 10%, and bottom 20% as blank platform-safe areas. Keep animation, labels, arrows, and cards inside those limits, but align the main composition to the physical centerline of the complete frame. A one-sided safe inset may reduce the usable width; it must not shift the visual center left.
+- Do not reserve a blank NBA or other external-footage window by default. The first two shots should be composed as complete stickman scenes, with all titles, diagrams, characters, and concept labels centered on the physical centerline of the complete frame. Only create an external-footage placeholder when the user explicitly requests one for that project.
 - Use Xiaoxiao (`zh-CN-XiaoxiaoNeural`) as the default narration voice. If that backend is unavailable, use `Microsoft Huihui Desktop` only as a documented fallback.
-- Use a consistent 1.2× narration tempo while preserving pitch.
+- Use a consistent 1.3× narration tempo while preserving pitch.
 - Keep `audio.narrator_voice` at `xiaoxiao` unless the user explicitly requests another supported voice.
-- Keep about 1.0 second of silence between spoken shot segments.
+- Aim for about 0.5 seconds of silence between spoken shot segments. Measure the actual speech gap and keep every final syllable complete.
 - Increase narration consistently and limit peaks; do not normalize shots to visibly different loudness.
 - Do not add subtitles unless requested. Concept labels and summary cards are screen graphics, not subtitles.
 - Write every artifact under the current project directory. Use versioned folders and update `latest.mp4` only after QA passes.
 
 Treat these as defaults. Follow explicit project-specific overrides.
+
+## Optional external footage
+
+Only add an external-footage placeholder when the user explicitly requests it for the current project. If requested, storyboard it as an independent layer with stable coordinates and keep it inside the configured safe areas. Only insert footage supplied by the user or footage the user is authorized to use. Cropping may be used for composition and platform-safe framing, but never remove attribution, mirror footage, alter fingerprints, or add overlays for the purpose of evading copyright detection.
 
 ## Narration voice parameter
 
@@ -127,7 +132,7 @@ Treat these as defaults. Follow explicit project-specific overrides.
 - Preserve the latest user-approved concept definitions across narration, storyboard, and visuals. Do not reintroduce a rejected analogy or definition.
 - Keep the two-sentence life-mapping hook, first-second concrete anchor, recognition contrast, time promise, three-or-four-concept order, and final all-visible state unless the user explicitly overrides the opening. For AI-behavior suspense questions, the concrete anchor is the real AI contrast and the familiar analogy follows as the bridge.
 - Treat short time promises as spoken framing, not a reason to draw timers. Do not use countdowns, clocks, progress rings, ticking digits, or similar time visualizations unless explicitly requested.
-- Keep the top, right, and bottom platform-safe zones blank. Use `Canvas` or equivalent centralized layout math so no animation, text, card, or arrow enters those zones.
+- Keep the top, right, and bottom platform-safe zones blank. Use `Canvas` or equivalent centralized layout math so no animation, text, card, or arrow enters those zones. Center the scene on the complete frame's physical centerline, not the midpoint of the leftover safe region.
 - Preserve the `总—分—总` structure: opening concept overview, complete middle breakdown, and a closing synthesis grounded in the same approved concepts.
 - End with one concise synthesis followed by one comment question; do not repeat the complete summary twice.
 - Keep `spoken_text` separate from `display_text`. A screen may show `Multi-agent` while TTS receives `MultiAgent` to avoid an unnatural pause.

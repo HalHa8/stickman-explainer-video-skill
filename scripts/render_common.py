@@ -12,7 +12,7 @@ class Canvas:
         height=2560,
         safe_top=0.10,
         background="#FFFFFF",
-        safe_right=0.20,
+        safe_right=0.10,
         safe_bottom=0.20,
     ):
         self.width = int(width)
@@ -32,8 +32,15 @@ class Canvas:
             raise ValueError("Platform safe areas leave no drawable content region")
         self.image = Image.new("RGB", (self.width, self.height), background)
         self.draw = ImageDraw.Draw(self.image)
-        self.scale = min(self.content_width / 720, self.content_height / 1280)
-        self.offset_x = self.content_left + (self.content_width - 720 * self.scale) / 2
+        # Keep the composition on the physical frame centerline. A one-sided
+        # safe inset may reduce scale, but must not drag the scene sideways.
+        frame_center_x = self.width / 2
+        centered_width = 2 * min(
+            frame_center_x - self.content_left,
+            self.content_right - frame_center_x,
+        )
+        self.scale = min(centered_width / 720, self.content_height / 1280)
+        self.offset_x = frame_center_x - 720 * self.scale / 2
         self.offset_y = self.content_top + (self.content_height - 1280 * self.scale) / 2
 
     @property
@@ -49,7 +56,7 @@ class Canvas:
             video["height"],
             video.get("safe_area_top", 0.10),
             video.get("background", "#FFFFFF"),
-            video.get("safe_area_right", 0.20),
+            video.get("safe_area_right", 0.10),
             video.get("safe_area_bottom", 0.20),
         )
 

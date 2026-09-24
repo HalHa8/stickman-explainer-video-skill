@@ -58,7 +58,7 @@ def main():
 
     fps = float(data["video"]["fps"])
     audio_config = data["audio"]
-    pause = float(audio_config.get("inter_shot_pause", 1.0))
+    pause = float(audio_config.get("inter_shot_pause", 0.5))
     final_hold = float(audio_config.get("final_hold", 0.8))
     threshold = float(audio_config.get("silence_threshold_db", -45.0))
     minimum_tail = 0.05

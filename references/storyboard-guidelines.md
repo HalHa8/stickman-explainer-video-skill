@@ -119,7 +119,9 @@ Do not remove the end of a waveform. Retain the complete narration file and add 
 
 ## Platform-safe composition
 
-Reserve the configured safe areas before positioning text. By default, leave the top 10%, right 20%, and bottom 20% blank for the platform UI. Compose all animation, text, arrows, and cards inside the remaining central region; do not let an arrowhead or card edge enter a forbidden side. Create render canvases with `Canvas.from_video_config(video)` or use equivalent bounds-aware math, then inspect representative frames because metadata alone cannot prove the zones are empty.
+Reserve the configured safe areas before positioning text. By default, leave the top 10%, right 10%, and bottom 20% blank for the platform UI. Compose all animation, text, arrows, and cards inside those limits; do not let an arrowhead or card edge enter a forbidden side. Keep the principal layout centered on the physical centerline of the full frame instead of centering it in the leftover area created by the one-sided right inset. Create render canvases with `Canvas.from_video_config(video)` or use equivalent bounds-aware math, then inspect representative frames because metadata alone cannot prove the zones are empty.
+
+Do not reserve a blank sports-footage region in opening shots unless the user explicitly asks for one. By default, use the full central composition for the stickman explanation: title, characters, action, and concept labels all align to the physical centerline of the complete frame. If the user does request external footage, treat its insertion box as an independent layer and keep it inside the configured safe areas.
 
 ## Animation, cards, and information hierarchy
 
